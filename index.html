@@ -108,13 +108,11 @@ select.control{
   background-repeat: no-repeat;
 }
 
-/* Full-width row fields */
 .field.wide{
   grid-column: 1 / -1;
   grid-template-columns: 120px 1fr;
 }
 
-/* Weight */
 .weight-wrap{
   display:flex;
   align-items:end;
@@ -152,16 +150,17 @@ select.control{
   border: 1px dashed #cfcfcf;
   cursor: pointer;
   display:block;
+  transition: 0.2s;
+}
+.photo-item img:hover {
+  background: #f0f7ff;
+  border-color: #007bff;
 }
 
 /* Signature */
 .sig{
   margin-top: 10px;
   padding: 10px;
-}
-.signatures{
-  break-inside: avoid;
-  page-break-inside: avoid;
 }
 .sig-grid{
   display:grid;
@@ -213,34 +212,17 @@ select.control{
   color: var(--muted);
 }
 
-/* ===== Print (Desktop / iOS) ===== */
 @media print{
   body{ background:none; padding:0; }
   .page{
-    margin:0;
-    width:auto;
-    min-height:auto;
-    box-shadow:none;
+    margin:0; width:auto; min-height:auto; box-shadow:none;
     padding: var(--pad-y) var(--pad-x);
   }
   .toolbar{ display:none !important; }
   select.control{ background-image:none !important; }
   input.control, select.control{ border:none !important; }
-
-  @page{
-    size: A4 portrait;
-    margin: 6mm;
-  }
-
-  .page{
-    transform: scale(0.96);
-    transform-origin: top left;
-    padding-bottom: 0 !important;
-  }
-
-  .photo-item img{ height: 102px !important; }
-  .sig{ margin-top: 6px !important; padding-top: 6px !important; }
-  .sig-line{ margin: 28px 0 4px !important; }
+  @page{ size: A4 portrait; margin: 6mm; }
+  .page{ transform: scale(0.96); transform-origin: top left; }
 }
 </style>
 </head>
@@ -253,7 +235,7 @@ select.control{
     <button class="btn-pdf" onclick="exportPDF()">📄 Export PDF</button>
     <button class="btn-clear" onclick="location.reload()">ล้าง</button>
   </div>
-  <div class="hint">คลิกที่รูปเพื่อแนบรูป (4 รูป/แถว) — iPhone แนะนำใช้ Export PDF เพื่อตัด URL/วันที่</div>
+  <div class="hint">คลิกที่รูปเพื่อแนบรูปภาพ — รองรับทั้งถ่ายใหม่และเลือกจากคลัง</div>
 </div>
 
 <div class="page">
@@ -267,7 +249,7 @@ select.control{
       <div class="field">
         <div class="label">วันที่จำหน่าย:</div>
         <input class="control" type="date" id="saleDateInput">
-      </div>  
+      </div>
       <div class="field">
         <div class="label">ผู้รับซื้อ:</div>
         <select class="control" id="buyer">
@@ -308,8 +290,7 @@ select.control{
     </div>
   </div>
 
-  <br>
-  <div class="section-title">ก่อนดำเนินการ</div><br>
+  <br><div class="section-title">ก่อนดำเนินการ</div><br>
   <div class="photo-grid" id="before"></div>
 
   <div class="section-title">ระหว่างดำเนินการ</div><br>
@@ -337,66 +318,63 @@ select.control{
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
-/* PWA Service Worker */
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js");
-}
-
 /* ===== ระบบวันที่ พ.ศ. ในช่องเดียว ===== */
 const dateInput = document.getElementById("saleDateInput");
 
 function formatThaiDate(iso) {
   if(!iso) return "";
-  const [y, m, d] = iso.split("-");
-  return `${parseInt(d)}/${parseInt(m)}/${parseInt(y) + 543}`;
+  const parts = iso.split("-");
+  return `${parseInt(parts[2])}/${parseInt(parts[1])}/${parseInt(parts[0]) + 543}`;
 }
 
-dateInput.addEventListener("focus", (e) => {
-  e.target.type = "date";
-});
-
+dateInput.addEventListener("focus", (e) => { e.target.type = "date"; });
 dateInput.addEventListener("blur", (e) => {
   if (e.target.value) {
-    const displayStr = formatThaiDate(e.target.value);
+    const val = e.target.value;
     e.target.type = "text";
-    e.target.value = displayStr;
+    e.target.value = formatThaiDate(val);
   }
 });
 
-/* ===== สร้างตารางรูปภาพ ===== */
+/* ===== ระบบแนบรูปภาพ (แก้ไขให้คลิกง่ายขึ้น) ===== */
 function placeholder(){
   return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
     <svg xmlns='http://www.w3.org/2000/svg' width='600' height='420'>
       <rect width='100%' height='100%' fill='#f5f5f5'/>
       <rect x='18' y='18' width='564' height='384' fill='none' stroke='#cfcfcf' stroke-width='4' stroke-dasharray='10 10'/>
-      <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle'
-            font-size='24' fill='#888' font-family='Sarabun'>คลิกเพื่อแนบรูป</text>
+      <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='24' fill='#888' font-family='Sarabun'>คลิกเพื่อแนบรูป</text>
     </svg>
   `);
 }
 
 function buildGrid(id){
   const box = document.getElementById(id);
-  for(let i=0;i<4;i++){
+  for(let i=0; i<4; i++){
     const wrap = document.createElement("div");
     wrap.className = "photo-item";
 
     const f = document.createElement("input");
     f.type = "file";
     f.accept = "image/*";
-    f.capture = "environment";
     f.style.display = "none";
 
     const img = document.createElement("img");
     img.src = placeholder();
-    img.onclick = ()=> f.click();
+    
+    // คลิกที่รูปแล้วเรียก Input ไฟล์
+    img.addEventListener('click', () => f.click());
 
-    f.onchange = ()=> {
-      if(!f.files || !f.files[0]) return;
-      const r = new FileReader();
-      r.onload = e => img.src = e.target.result;
-      r.readAsDataURL(f.files[0]);
-    };
+    f.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const r = new FileReader();
+        r.onload = (event) => {
+          img.src = event.target.result;
+          img.style.objectFit = "cover";
+        };
+        r.readAsDataURL(file);
+      }
+    });
 
     wrap.appendChild(f);
     wrap.appendChild(img);
@@ -412,11 +390,11 @@ buildGrid("after");
 function exportPDF(){
   const el = document.querySelector(".page");
   const opt = {
-    margin:       [6, 6, 6, 6],
-    filename:     'รายงานการจำหน่ายผลพลอยได้.pdf',
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    margin: [6, 6, 6, 6],
+    filename: 'รายงานการจำหน่ายผลพลอยได้.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   html2pdf().set(opt).from(el).save();
 }
