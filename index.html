@@ -238,6 +238,47 @@ select.control{
   input.control, select.control{
     border:none !important;
   }
+  /* ===== Print Fix for iOS / Mobile ===== */
+@media print {
+
+  /* บังคับ A4 */
+  @page {
+    size: A4 portrait;
+    margin: 6mm; /* ลด margin เพื่อให้พอดีหน้าเดียว */
+  }
+
+  html, body {
+    width: 210mm;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ซ่อนปุ่มบนหน้าเว็บเวลาพิมพ์ */
+  .btn-print, .btn-clear, .no-print {
+    display: none !important;
+  }
+
+  /* กัน element สำคัญแตกหน้า */
+  .signatures, .signature-block,
+  .section, .photo-grid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* ลดช่องว่างท้ายหน้า (ตัวการดันไปหน้า 2 บ่อยสุด) */
+  .page, .paper {
+    margin: 0 !important;
+    padding-bottom: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* ถ้ายังแตกหน้า ให้ “ย่อ” นิดเดียวเฉพาะตอนพิมพ์ */
+  .page, .paper {
+    transform: scale(0.97);
+    transform-origin: top left;
+  }
+}
+
 }
 </style>
 </head>
@@ -387,4 +428,5 @@ buildGrid("after");
 
 </body>
 </html>
+
 
