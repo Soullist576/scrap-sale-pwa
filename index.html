@@ -6,6 +6,8 @@
 <title>แบบฟอร์มรายงานการจำหน่ายผลพลอยได้ (แบบ A)</title>
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#007bff">
+<button class="btn-print" onclick="exportPDF()">📄 Export PDF</button>
+
 
 
 <style>
@@ -286,6 +288,22 @@ select.control{
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./service-worker.js");
   }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+function exportPDF(){
+  const el = document.querySelector(".page");
+
+  const opt = {
+    margin:       6,
+    filename:     'รายงานการจำหน่ายผลพลอยได้.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(el).save();
+}
 </script>
 
 <body>
