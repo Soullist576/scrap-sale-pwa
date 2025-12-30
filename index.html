@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>แบบฟอร์มรายงานการจำหน่ายผลพลอยได้ (แบบ A)</title>
+
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#007bff">
-
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
@@ -58,7 +58,7 @@ body{
   color: var(--muted);
 }
 
-/* Info layout (2 columns balanced) */
+/* Info layout */
 .info{
   margin-top: 8px;
   padding: 8px 10px;
@@ -68,7 +68,6 @@ body{
   grid-template-columns: 1fr 1fr;
   gap: 8px 14px;
 }
-
 .field{
   display:grid;
   grid-template-columns: 120px 1fr;
@@ -115,7 +114,7 @@ select.control{
   grid-template-columns: 120px 1fr;
 }
 
-/* Weight: input small + unit */
+/* Weight */
 .weight-wrap{
   display:flex;
   align-items:end;
@@ -132,14 +131,12 @@ select.control{
   font-size: 15px;
   font-weight: 700;
 }
-
 .photo-grid{
   display:grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
-
 .photo-item{
   border:1px solid var(--soft);
   padding: 3px;
@@ -147,10 +144,9 @@ select.control{
   break-inside: avoid;
   page-break-inside: avoid;
 }
-
 .photo-item img{
   width:100%;
-  height: 112px;        /* ปรับให้สมส่วนขึ้น */
+  height: 112px;
   object-fit: contain;
   background:#fff;
   border: 1px dashed #cfcfcf;
@@ -160,8 +156,12 @@ select.control{
 
 /* Signature */
 .sig{
-  margin-top: 14px;
+  margin-top: 10px;
   padding: 10px;
+}
+.signatures{
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 .sig-grid{
   display:grid;
@@ -178,15 +178,7 @@ select.control{
 .sig-line{
   width: 72%;
   border-top: 1px dashed var(--line);
-  margin: 42px 0 6px;
-}
-.sig-name{
-  width: 72%;
-  text-align:center;
-}
-.sig-name span{
-  display:inline-block;
-  width: 100%;
+  margin: 34px 0 6px;
 }
 
 /* Toolbar */
@@ -213,6 +205,7 @@ select.control{
   cursor:pointer;
 }
 .btn-print{ background:#007bff; color:#fff; }
+.btn-pdf{ background:#17a2b8; color:#fff; }
 .btn-clear{ background:#111; color:#fff; }
 .hint{
   margin: 6px 0 0;
@@ -220,7 +213,7 @@ select.control{
   color: var(--muted);
 }
 
-/* Print */
+/* ===== Print (Desktop / iOS) ===== */
 @media print{
   body{ background:none; padding:0; }
   .page{
@@ -231,71 +224,36 @@ select.control{
     padding: var(--pad-y) var(--pad-x);
   }
   .toolbar{ display:none !important; }
-  /* ซ่อนลูกศร dropdown ตอนพิมพ์ + เอาขอบล่างออกให้เรียบ */
-  select.control{
-    background-image:none !important;
-  }
-  input.control, select.control{
-    border:none !important;
-  }
-  /* ===== Print Fix for iOS / Mobile ===== */
-@media print {
+  select.control{ background-image:none !important; }
+  input.control, select.control{ border:none !important; }
 
-  /* บังคับ A4 */
-  @page {
+  @page{
     size: A4 portrait;
-    margin: 6mm; /* ลด margin เพื่อให้พอดีหน้าเดียว */
+    margin: 6mm;
   }
 
-  html, body {
-    width: 210mm;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  /* ซ่อนปุ่มบนหน้าเว็บเวลาพิมพ์ */
-  .btn-print, .btn-clear, .no-print {
-    display: none !important;
-  }
-
-  /* กัน element สำคัญแตกหน้า */
-  .signatures, .signature-block,
-  .section, .photo-grid {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  /* ลดช่องว่างท้ายหน้า (ตัวการดันไปหน้า 2 บ่อยสุด) */
-  .page, .paper {
-    margin: 0 !important;
-    padding-bottom: 0 !important;
-    box-shadow: none !important;
-  }
-
-  /* ถ้ายังแตกหน้า ให้ “ย่อ” นิดเดียวเฉพาะตอนพิมพ์ */
-  .page, .paper {
-    transform: scale(0.97);
+  .page{
+    transform: scale(0.96);
     transform-origin: top left;
+    padding-bottom: 0 !important;
   }
-}
 
+  .photo-item img{ height: 102px !important; }
+  .sig{ margin-top: 6px !important; padding-top: 6px !important; }
+  .sig-line{ margin: 28px 0 4px !important; }
 }
 </style>
 </head>
-<script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./service-worker.js");
-  }
-</script>
 
 <body>
 
 <div class="toolbar">
   <div class="row">
-    <button class="btn-print" onclick="window.print()">🖨 พิมพ์เอกสาร</button>
+    <button class="btn-print" onclick="window.print()">🖨 พิมพ์</button>
+    <button class="btn-pdf" onclick="exportPDF()">📄 Export PDF</button>
     <button class="btn-clear" onclick="location.reload()">ล้าง</button>
   </div>
-  <div class="hint">คลิกที่รูปเพื่อแนบรูป (4 รูป/แถว) — Layout พอดี A4</div>
+  <div class="hint">คลิกที่รูปเพื่อแนบรูป (4 รูป/แถว) — iPhone แนะนำใช้ Export PDF เพื่อตัด URL/วันที่</div>
 </div>
 
 <div class="page">
@@ -304,17 +262,15 @@ select.control{
     <h3>โรงงานผลิตอาหารสัตว์บกธารเกษม</h3>
   </div>
 
-  <!-- INFO -->
   <div class="info">
     <div class="info-grid">
       <div class="field">
         <div class="label">วันที่จำหน่าย:</div>
-        <input class="control" type="text" placeholder="วว/ดด/ปปปป">
-      </div>
-
+        <input class="control" type="date" id="saleDateInput">
+      </div>  
       <div class="field">
         <div class="label">ผู้รับซื้อ:</div>
-        <select class="control">
+        <select class="control" id="buyer">
           <option value="">-- เลือกผู้รับซื้อ --</option>
           <option>นายยงยุทธ พลายสุขแสง</option>
           <option>บริษัท A</option>
@@ -323,19 +279,18 @@ select.control{
       </div>
 
       <div class="field">
-         <div class="label">ผู้ขนส่ง:</div>
-  	<input class="control" type="text" placeholder="พิมพ์ชื่อผู้ขนส่ง">
+        <div class="label">ผู้ขนส่ง:</div>
+        <input class="control" type="text" id="transporter" placeholder="พิมพ์ชื่อผู้ขนส่ง">
       </div>
 
       <div class="field">
         <div class="label">ทะเบียนรถ:</div>
-  	<input class="control" type="text" placeholder="พิมพ์ชื่อทะเบียนรถ">
-
+        <input class="control" type="text" id="plate" placeholder="พิมพ์ทะเบียนรถ">
       </div>
 
       <div class="field wide">
         <div class="label">รายการผลพลอยได้:</div>
-        <select class="control">
+        <select class="control" id="byproduct">
           <option value="">-- เลือกรายการ --</option>
           <option>เศษอาหารสัตว์เสื่อมสภาพ</option>
           <option>เศษวัตถุดิบอาหารสัตว์เสื่อมสภาพ</option>
@@ -346,42 +301,69 @@ select.control{
       <div class="field wide">
         <div class="label">ปริมาณน้ำหนัก:</div>
         <div class="weight-wrap">
-          <input class="control" type="text" placeholder="6,300">
+          <input class="control" type="text" id="weight" placeholder="6,300">
           <div style="font-weight:700;">กิโลกรัม</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- PHOTOS -->
+  <br>
   <div class="section-title">ก่อนดำเนินการ</div><br>
-  <div class="photo-grid" id="before"></div><br>
+  <div class="photo-grid" id="before"></div>
 
   <div class="section-title">ระหว่างดำเนินการ</div><br>
-  <div class="photo-grid" id="middle"></div><br>
+  <div class="photo-grid" id="middle"></div>
 
   <div class="section-title">ดำเนินการเสร็จ</div><br>
-  <div class="photo-grid" id="after"></div><br>
+  <div class="photo-grid" id="after"></div>
 
-  <!-- SIGN -->
-  <div class="sig">
+  <div class="sig signatures">
     <div class="sig-grid">
-      <div class="sig-box">
+      <div class="sig-box"><br>
         <b>ผู้ขับรถ</b><br>
         <div class="sig-line"></div><br>
-        <div class="sig-name">(______________________________________________)</div>
+        <div>(______________________________________________)</div>
       </div>
-      <div class="sig-box">
+      <div class="sig-box"><br>
         <b>หน่วยงานธุรการ</b><br>
         <div class="sig-line"></div><br>
-        <div class="sig-name">(______________________________________________)</div>
+        <div>(______________________________________________)</div>
       </div>
     </div>
   </div>
-
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 <script>
+/* PWA Service Worker */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./service-worker.js");
+}
+
+/* ===== ระบบวันที่ พ.ศ. ในช่องเดียว ===== */
+const dateInput = document.getElementById("saleDateInput");
+
+function formatThaiDate(iso) {
+  if(!iso) return "";
+  const [y, m, d] = iso.split("-");
+  return `${parseInt(d)}/${parseInt(m)}/${parseInt(y) + 543}`;
+}
+
+dateInput.addEventListener("focus", (e) => {
+  e.target.type = "date";
+});
+
+dateInput.addEventListener("blur", (e) => {
+  if (e.target.value) {
+    const displayStr = formatThaiDate(e.target.value);
+    e.target.type = "text";
+    e.target.value = displayStr;
+  }
+});
+
+/* ===== สร้างตารางรูปภาพ ===== */
 function placeholder(){
   return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
     <svg xmlns='http://www.w3.org/2000/svg' width='600' height='420'>
@@ -402,6 +384,7 @@ function buildGrid(id){
     const f = document.createElement("input");
     f.type = "file";
     f.accept = "image/*";
+    f.capture = "environment";
     f.style.display = "none";
 
     const img = document.createElement("img");
@@ -424,9 +407,20 @@ function buildGrid(id){
 buildGrid("before");
 buildGrid("middle");
 buildGrid("after");
+
+/* Export PDF */
+function exportPDF(){
+  const el = document.querySelector(".page");
+  const opt = {
+    margin:       [6, 6, 6, 6],
+    filename:     'รายงานการจำหน่ายผลพลอยได้.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(el).save();
+}
 </script>
 
 </body>
 </html>
-
-
